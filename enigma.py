@@ -68,7 +68,7 @@ def test_reflector(text, disk):
 
 def enigma(text, ref, rot1, rot2, rot3):
     result = ''
-    rot_list = [rot1, rot2, rot3]
+    rot_list = [rot3, rot2, rot1]
     for symbol in text_formatter(text):
         for rot in rot_list:
             symbol = rotor(symbol, rot)
@@ -78,5 +78,5 @@ def enigma(text, ref, rot1, rot2, rot3):
         result += symbol
     return result
 
-print(enigma('A', 1, 1, 2, 3))
+print(enigma('LDRBBKJMWGFBOFBYF', 1, 1, 2, 3))
 
