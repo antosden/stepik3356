@@ -83,7 +83,7 @@ def shifter(symbol, rotors, reverse=False):
 def check_shift(symbol, rot):
     rotors_shift = {1: 'R', 2: 'F', 3: 'W', 4: 'K',
                     5: 'A', 6: 'AN', 7: 'AN', 8: 'AN'}
-    return rotors_shift[rot] == symbol
+    return symbol in rotors_shift[rot]
 
 def shifter_v03(symbol, rotors, reverse=False):
     prev_shift = 0
