@@ -1,5 +1,4 @@
-text = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-disk = 1
+from string import ascii_uppercase as eng_alphabet
 
 def text_formatter(text):
     return ''.join(x for x in text.upper() if x.isalpha() or x.isdigit())
@@ -41,12 +40,6 @@ def rotor(symbol, n, reverse=False):
     else:
         return rotors[n][rotors[0].index(symbol)]
 
-def enigma_test(text, n, reverse=False):
-    encrypted = ''
-    for symbol in text:
-        encrypted += rotor(symbol, n, reverse)
-    return encrypted
-
 def reflector(symbol, n):
     reflectors_list = generate_reflectors()
     if n > 0:
@@ -58,15 +51,7 @@ def reflector(symbol, n):
     else:
         return symbol
 
-
-def test_reflector(text, disk):
-    result = ''
-    for symbol in text_formatter(text):
-        result += reflector(symbol, disk)
-    return result
-
-
-def enigma(text, ref, rot1, rot2, rot3):
+def enigma_v01(text, ref, rot1, rot2, rot3):
     result = ''
     rot_list = [rot3, rot2, rot1]
     for symbol in text_formatter(text):
@@ -78,5 +63,58 @@ def enigma(text, ref, rot1, rot2, rot3):
         result += symbol
     return result
 
-print(enigma('LDRBBKJMWGFBOFBYF', 1, 1, 2, 3))
+def caesar(text, key, alphabet=eng_alphabet):
+    encrypted = ''
+    for letter in text_formatter(text):
+        cursor = alphabet.find(letter) + key
+        while abs(cursor) > len(alphabet) - 1:
+            cursor = cursor - int(key/abs(key)) * len(alphabet)
+        encrypted += alphabet[cursor]
+    return encrypted
 
+def shifter(symbol, rotors, reverse=False):
+    prev_shift = 0
+    for rot in rotors[::-1] if reverse else rotors: 
+        symbol = caesar(symbol, rot['shift'] + prev_shift)
+        symbol = rotor(symbol, rot['rot'], reverse)
+        prev_shift = -rot['shift']
+    return caesar(symbol, prev_shift)
+
+def check_shift(symbol, rot):
+    rotors_shift = {1: 'R', 2: 'F', 3: 'W', 4: 'K',
+                    5: 'A', 6: 'AN', 7: 'AN', 8: 'AN'}
+    return rotors_shift[rot] == symbol
+
+def shifter_v03(symbol, rotors, reverse=False):
+    prev_shift = 0
+    for rot in rotors[::-1] if reverse else rotors: 
+        symbol = caesar(symbol, rot['shift'] + prev_shift)
+        symbol = rotor(symbol, rot['rot'], reverse)
+        prev_shift = -rot['shift']
+        process_shift += 1
+    return caesar(symbol, prev_shift)
+
+def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3):
+    result = ''
+    rotors = [
+        {'rot': rot3, 'shift': shift3},
+        {'rot': rot2, 'shift': shift2},
+        {'rot': rot1, 'shift': shift1}
+    ]
+    for symbol in text_formatter(text):
+        symbol = shifter_v03(symbol, rotors)
+        symbol = reflector(symbol, ref)
+        symbol = shifter_v03(symbol, rotors, True)
+        result += symbol
+    return result
+
+tests = [
+    enigma('AAAAAAA', 1, 1, 0, 2, 0, 3, 0),
+    enigma('BDZGOWC', 1, 1, 0, 2, 0, 3, 0),
+    enigma('AAAAAAA', 1, 2, 3, 2, 3, 2, 3),
+    enigma('AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA', 1, 2, 3, 2, 3, 2, 3),
+    enigma('AAAAA AAAAA', 1, 1, 0, 2, 0, 2, 0),
+    enigma('AAAAA AAAAA', 1, 1, 0, 2, 0, 1, 0)
+]
+
+[print(test) for test in tests]
