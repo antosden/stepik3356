@@ -51,18 +51,6 @@ def reflector(symbol, n):
     else:
         return symbol
 
-def enigma_v01(text, ref, rot1, rot2, rot3):
-    result = ''
-    rot_list = [rot3, rot2, rot1]
-    for symbol in text_formatter(text):
-        for rot in rot_list:
-            symbol = rotor(symbol, rot)
-        symbol = reflector(symbol, ref)
-        for rot in reversed(rot_list):
-            symbol = rotor(symbol, rot, True)
-        result += symbol
-    return result
-
 def caesar(text, key, alphabet=eng_alphabet):
     encrypted = ''
     for letter in text_formatter(text):
@@ -80,33 +68,29 @@ def shifter(symbol, rotors, reverse=False):
         prev_shift = -rot['shift']
     return caesar(symbol, prev_shift)
 
-def check_shift(symbol, rot):
-    rotors_shift = {1: 'R', 2: 'F', 3: 'W', 4: 'K',
-                    5: 'A', 6: 'AN', 7: 'AN', 8: 'AN'}
-    return symbol in rotors_shift[rot['rot']]
+def process_shifter(rotors, rotors_list=generate_rotors()):
+    rotors_shift = {1: 17, 2: 5, 3: 22, 4: 10,
+                    5: 0, 6: 0, 7: 0, 8: 0}
+    rotors[0]['shift'] += 1
+    if rotors[0]['shift'] == rotors_shift[3]:
+        rotors[1]['shift'] += 1
+    if rotors[1]['shift'] == rotors_shift[2]:
+        rotors[2]['shift'] += 1
 
-def shifter_v03(symbol, rotors, reverse=False):
-    prev_shift = 0
-    for rot in rotors[::-1] if reverse else rotors: 
-        symbol = caesar(symbol, rot['shift'] - prev_shift)
-        symbol = rotor(symbol, rot['rot'], reverse)
-        prev_shift = rot['shift']
-        if check_shift(symbol, rot):
-            prev_shift += 1
-
-    return caesar(symbol, prev_shift)
 
 def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3):
     result = ''
+    process_shift = 0
     rotors = [
         {'rot': rot3, 'shift': shift3},
         {'rot': rot2, 'shift': shift2},
         {'rot': rot1, 'shift': shift1}
-        ]
+    ]
     for symbol in text_formatter(text):
-        symbol = shifter_v03(symbol, rotors)
+        process_shifter(rotors)
+        symbol = shifter(symbol, rotors, process_shift)
         symbol = reflector(symbol, ref)
-        symbol = shifter_v03(symbol, rotors, True)
+        symbol = shifter(symbol, rotors, reverse=True)
         result += symbol
     return result
 

@@ -15,7 +15,7 @@ def print_mimic(mimic_dict, word):
     result = [word]
     while len(result) < 200:
         if word not in mimic_dict.keys():
-            word = mimic_dict[""][0]
+            word = choice(mimic_dict[''])
             result.append(word)
         cur_word = choice(mimic_dict[word])
         result.append(cur_word)
