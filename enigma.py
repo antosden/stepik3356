@@ -83,15 +83,17 @@ def shifter(symbol, rotors, reverse=False):
 def check_shift(symbol, rot):
     rotors_shift = {1: 'R', 2: 'F', 3: 'W', 4: 'K',
                     5: 'A', 6: 'AN', 7: 'AN', 8: 'AN'}
-    return symbol in rotors_shift[rot]
+    return symbol in rotors_shift[rot['rot']]
 
 def shifter_v03(symbol, rotors, reverse=False):
     prev_shift = 0
     for rot in rotors[::-1] if reverse else rotors: 
-        symbol = caesar(symbol, rot['shift'] + prev_shift)
+        symbol = caesar(symbol, rot['shift'] - prev_shift)
         symbol = rotor(symbol, rot['rot'], reverse)
-        prev_shift = -rot['shift']
-        process_shift += 1
+        prev_shift = rot['shift']
+        if check_shift(symbol, rot):
+            prev_shift += 1
+
     return caesar(symbol, prev_shift)
 
 def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3):
@@ -100,7 +102,7 @@ def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3):
         {'rot': rot3, 'shift': shift3},
         {'rot': rot2, 'shift': shift2},
         {'rot': rot1, 'shift': shift1}
-    ]
+        ]
     for symbol in text_formatter(text):
         symbol = shifter_v03(symbol, rotors)
         symbol = reflector(symbol, ref)
