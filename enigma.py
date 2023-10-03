@@ -35,19 +35,14 @@ def generate_reflectors():
     
 def rotor(symbol, n, reverse=False): 
     rotors = generate_rotors()
-    if reverse:
-        return rotors[0][rotors[n].index(symbol)]
-    else:
-        return rotors[n][rotors[0].index(symbol)]
+    return rotors[0][rotors[n].index(symbol)] if reverse else rotors[n][rotors[0].index(symbol)]
 
 def reflector(symbol, n):
     reflectors_list = generate_reflectors()
     if n > 0:
         for pair in reflectors_list[n - 1]:
-            if pair[0] == symbol:
-                return pair[1]
-            elif pair[1] == symbol:
-                return pair[0]
+            if symbol in pair:
+                return pair[0] if symbol == pair[1] else pair[1]
     else:
         return symbol
 
@@ -68,39 +63,61 @@ def shifter(symbol, rotors, reverse=False):
         prev_shift = -rot['shift']
     return caesar(symbol, prev_shift)
 
-def process_shifter(rotors, rotors_list=generate_rotors()):
-    rotors_shift = {1: 17, 2: 5, 3: 22, 4: 10,
+def process_shifter(rotors):
+    rotors_turns = {1: 17, 2: 5, 3: 22, 4: 10,
                     5: 0, 6: 0, 7: 0, 8: 0}
-    rotors[0]['shift'] += 1
-    if rotors[0]['shift'] == rotors_shift[3]:
-        rotors[1]['shift'] += 1
-    if rotors[1]['shift'] == rotors_shift[2]:
-        rotors[2]['shift'] += 1
+    for rot in rotors:
+        if rot['turn']:
+            rot['shift'] += 1
+            if rot['shift'] >= 26:
+                rot['shift'] = 0
+            rot['turn'] = False
+    for i in range(len(rotors) - 1):
+        if rotors[i]['shift'] == rotors_turns[rotors[i]['rot']] - 1:
+            rotors[i]['turn'], rotors[i + 1]['turn'] = True, True
+        
+def incorrect_pairs(pairs):
+    pairs = sorted(text_formatter(pairs).replace(' ', ''))
+    for i in range(len(pairs) - 1):
+        if pairs[i] == pairs[i + 1]:
+            return True
 
+def commutation(symbol, pairs):
+    pairs = (pairs.upper()).split()
+    for pair in pairs:
+        if symbol in pair:
+            return pair[0] if symbol == pair[1] else pair[1]
+    return symbol
 
-def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3):
+def enigma(text, ref, rot1, shift1, rot2, shift2, rot3, shift3, pairs=''):
+    if incorrect_pairs(pairs):
+        return "Извините, невозможно произвести коммутацию"
     result = ''
     process_shift = 0
     rotors = [
-        {'rot': rot3, 'shift': shift3},
-        {'rot': rot2, 'shift': shift2},
-        {'rot': rot1, 'shift': shift1}
+        {'rot': rot3, 'shift': shift3, 'turn': False},
+        {'rot': rot2, 'shift': shift2, 'turn': False},
+        {'rot': rot1, 'shift': shift1, 'turn': False}
     ]
+
     for symbol in text_formatter(text):
+        symbol = commutation(symbol, pairs)
+        rotors[0]['turn'] = True
         process_shifter(rotors)
         symbol = shifter(symbol, rotors, process_shift)
         symbol = reflector(symbol, ref)
         symbol = shifter(symbol, rotors, reverse=True)
+        symbol = commutation(symbol, pairs)
         result += symbol
     return result
 
 tests = [
+    enigma('A', 1, 1, 0, 2, 0, 3, 0, ''),
+    enigma('A', 1, 1, 0, 2, 0, 3, 0, 'AC'),
+    enigma('A', 1, 1, 0, 2, 0, 3, 0, 'AC qd'),
+    enigma('A', 1, 1, 0, 2, 0, 3, 0, 'AC qd az'),
+    enigma('A', 1, 1, 0, 2, 0, 3, 0, 'AC qd za'),
     enigma('AAAAAAA', 1, 1, 0, 2, 0, 3, 0),
-    enigma('BDZGOWC', 1, 1, 0, 2, 0, 3, 0),
-    enigma('AAAAAAA', 1, 2, 3, 2, 3, 2, 3),
-    enigma('AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA AAAAA', 1, 2, 3, 2, 3, 2, 3),
-    enigma('AAAAA AAAAA', 1, 1, 0, 2, 0, 2, 0),
-    enigma('AAAAA AAAAA', 1, 1, 0, 2, 0, 1, 0)
 ]
 
 [print(test) for test in tests]
