@@ -1,20 +1,33 @@
 import numpy as np
 
-def task_01():
-    # numbers = [float(x) for x in "1, 2, 3, 4, 5.0, 6, 7, 8, 9, 10".split(', ')]
-    numbers = [float(x) for x in input().split(', ')]
+def line_segment_len(A, B):
+    return sum(np.array(A - B) ** 2) ** 0.5
 
-    V1 = np.array(numbers)
-    V2 = np.array([numbers[-2]])
-    V3 = np.array(numbers[::-1])
-    V4 = np.array(numbers[0::3])
-    V5 = np.array(range(len(numbers)))
+def triangle_area(A1, A2, A3):
+    A = line_segment_len(A1, A2)
+    B = line_segment_len(A2, A3)
+    C = line_segment_len(A3, A1)
 
-    tests = [V1, V2, V3, V4, V5]
-    [print(test) for test in tests]
+    p = 0.5 * (A + B + C)
+    return (p * (p - A) * (p - B) * (p - C)) ** 0.5
 
-def task_02():
-    V1 = np.array([int(x) for x in input().split(', ')])
-    V2 = np.array([int(x) for x in input().split(', ')])
-    V3 = V1 + V2
-    V4 = (V1[::-1])[::1] * (V2[::-1])[::1]
+
+M1 = np.array((
+    (1., 2., 3., 0.),
+    (4., 5., 6., 0.),
+    (0., 1., 1., 6.),
+    (7., 8., 9., 0.)
+))
+
+def matrix_operations(M):
+    M[-2] = np.sin(M[-2] * np.pi/6)
+    M[:, -2] = np.exp(M[:, -2])
+    return M
+
+def create_zero_matrix(data):
+    try:
+        shape, dtype = [int(x) for x in data], np.float64
+    except:
+        shape, dtype = [int(x) for x in data[:-1]], data[-1]
+    finally:
+        return np.zeros(shape, dtype)
