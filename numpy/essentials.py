@@ -12,12 +12,12 @@ def triangle_area(A1, A2, A3):
     return (p * (p - A) * (p - B) * (p - C)) ** 0.5
 
 
-M1 = np.array((
-    (1., 2., 3., 0.),
-    (4., 5., 6., 0.),
-    (0., 1., 1., 6.),
-    (7., 8., 9., 0.)
-))
+# M1 = np.array((
+#     (1., 2., 3., 0.),
+#     (4., 5., 6., 0.),
+#     (0., 1., 1., 6.),
+#     (7., 8., 9., 0.)
+# ))
 
 def matrix_operations(M):
     M[-2] = np.sin(M[-2] * np.pi/6)
@@ -31,3 +31,9 @@ def create_zero_matrix(data):
         shape, dtype = [int(x) for x in data[:-1]], data[-1]
     finally:
         return np.zeros(shape, dtype)
+    
+
+Z = np.array([[[1, 2],
+           [4, 5]],
+          [[7, 8],
+           [0, 0]]])
